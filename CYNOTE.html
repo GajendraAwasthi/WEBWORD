@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WEBWORD BY: GAJENDRA AWASTHI</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --secondary: #3b82f6;
+      --background: #ffffff;
+      --text: #1f2937;
+      --surface: #f3f4f6;
+      --border: #e5e7eb;
+      --hover: #dbeafe;
+      --accent: #60a5fa;
+    }
+
+    [data-theme="dark"] {
+      --primary: #60a5fa;
+      --secondary: #3b82f6;
+      --background: #111827;
+      --text: #f9fafb;
+      --surface: #1f2937;
+      --border: #374151;
+      --hover: #1f2937;
+      --accent: #2563eb;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .main-content {
+      flex: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      width: 100%;
+    }
+
+    .toolbar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      position: sticky;
+      top: 4rem;
+      z-index: 99;
+    }
+
+    .toolbar-group {
+      display: flex;
+      gap: 0.25rem;
+      padding: 0.25rem;
+      border-right: 1px solid var(--border);
+    }
+
+    .toolbar-group:last-child {
+      border-right: none;
+    }
+
+    button {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 32px;
+      justify-content: center;
+    }
+
+    button:hover {
+      background: var(--hover);
+    }
+
+    button.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .editor-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-height: 70vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #editor {
+      width: 100%;
+      height: 100%;
+      min-height: 70vh;
+      padding: 2rem;
+      outline: none;
+      background: var(--background);
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      min-width: 160px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+
+    .dropdown-content.show {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+      background: var(--hover);
+    }
+
+    .color-picker {
+      display: none;
+      position: absolute;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.5rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0.25rem;
+    }
+
+    .color-option {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+    }
+
+    .status-bar {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .toolbar {
+        flex-wrap: wrap;
+      }
+      
+      .toolbar-group {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        width: 100%;
+      }
+
+      .main-content {
+        padding: 1rem;
+      }
+
+      #editor {
+        padding: 1rem;
+      }
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .dropdown-content.show {
+      animation: slideDown 0.2s ease-out;
+    }
+
+    .page-size {
+      border: 1px dashed var(--border);
+      margin: 2rem auto;
+      background: var(--background);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <a href="#" class="logo">WEBWORD</a>
+      <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <div class="dropdown">
+          <button onclick="toggleDropdown('fontFamily')"><i class="fas fa-font"></i></button>
+          <div id="fontFamilyDropdown" class="dropdown-content">
+            <div class="dropdown-item" onclick="setFont('Arial')">Arial</div>
+            <div class="dropdown-item" onclick="setFont('Times New Roman')">Times New Roman</div>
+            <div class="dropdown-item" onclick="setFont('Courier New')">Courier New</div>
+          </div>
+        </div>
+        <div class="dropdown">
+          <button onclick="toggleDropdown('fontSize')"><i class="fas fa-text-height"></i></button>
+          <div id="fontSizeDropdown" class="dropdown-content">
+            <div class="dropdown-item" onclick="setFontSize('12px')">12</div>
+            <div class="dropdown-item" onclick="setFontSize('14px')">14</div>
+            <div class="dropdown-item" onclick="setFontSize('16px')">16</div>
+            <div class="dropdown-item" onclick="setFontSize('18px')">18</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar-group">
+        <button onclick="formatText('bold')"><i class="fas fa-bold"></i></button>
+        <button onclick="formatText('italic')"><i class="fas fa-italic"></i></button>
+        <button onclick="formatText('underline')"><i class="fas fa-underline"></i></button>
+      </div>
+
+      <div class="toolbar-group">
+        <button onclick="formatText('justifyLeft')"><i class="fas fa-align-left"></i></button>
+        <button onclick="formatText('justifyCenter')"><i class="fas fa-align-center"></i></button>
+        <button onclick="formatText('justifyRight')"><i class="fas fa-align-right"></i></button>
+      </div>
+
+      <div class="toolbar-group">
+        <button onclick="showColorPicker('text')"><i class="fas fa-paint-brush"></i></button>
+        <button onclick="showColorPicker('highlight')"><i class="fas fa-highlighter"></i></button>
+      </div>
+
+      <div class="toolbar-group">
+        <div class="dropdown">
+          <button onclick="toggleDropdown('pageSize')"><i class="fas fa-file-alt"></i></button>
+          <div id="pageSizeDropdown" class="dropdown-content">
+            <div class="dropdown-item" onclick="setPageSize('A4')">A4</div>
+            <div class="dropdown-item" onclick="setPageSize('Letter')">Letter</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar-group">
+        <button onclick="exportNote('pdf')"><i class="fas fa-file-pdf"></i></button>
+        <button onclick="exportNote('doc')"><i class="fas fa-file-word"></i></button>
+        <button onclick="exportNote('jpg')"><i class="fas fa-file-image"></i></button>
+      </div>
+    </div>
+
+    <div class="editor-container">
+      <div class="page-size" data-size="A4">
+        <div id="editor" contenteditable="true"></div>
+      </div>
+    </div>
+
+    <div id="colorPicker" class="color-picker">
+      <div class="color-grid">
+        <div class="color-option" style="background: #000000" onclick="setColor('#000000')"></div>
+        <div class="color-option" style="background: #ff0000" onclick="setColor('#ff0000')"></div>
+        <div class="color-option" style="background: #00ff00" onclick="setColor('#00ff00')"></div>
+        <div class="color-option" style="background: #0000ff" onclick="setColor('#0000ff')"></div>
+        <div class="color-option" style="background: #ffff00" onclick="setColor('#ffff00')"></div>
+        <div class="color-option" style="background: #ff00ff" onclick="setColor('#ff00ff')"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentColorAction = 'text';
+    let isDarkMode = false;
+
+    function toggleTheme() {
+      isDarkMode = !isDarkMode;
+      document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+    }
+
+    function formatText(command) {
+      document.execCommand(command, false, null);
+    }
+
+    function setFont(fontFamily) {
+      document.getElementById('editor').style.fontFamily = fontFamily;
+    }
+
+    function setFontSize(size) {
+      document.getElementById('editor').style.fontSize = size;
+    }
+
+    function showColorPicker(action) {
+      currentColorAction = action;
+      const picker = document.getElementById('colorPicker');
+      picker.style.display = 'block';
+      const button = event.target;
+      const rect = button.getBoundingClientRect();
+      picker.style.top = `${rect.bottom + window.scrollY}px`;
+      picker.style.left = `${rect.left}px`;
+    }
+
+    function setColor(color) {
+      const editor = document.getElementById('editor');
+      if (currentColorAction === 'text') {
+        editor.style.color = color;
+      } else {
+        editor.style.backgroundColor = color;
+      }
+      document.getElementById('colorPicker').style.display = 'none';
+    }
+
+    function toggleDropdown(id) {
+      const dropdown = document.getElementById(`${id}Dropdown`);
+      dropdown.classList.toggle('show');
+    }
+
+    function setPageSize(size) {
+      const pageSize = document.querySelector('.page-size');
+      pageSize.setAttribute('data-size', size);
+      if (size === 'A4') {
+        pageSize.style.width = '21cm';
+        pageSize.style.minHeight = '29.7cm';
+      } else if (size === 'Letter') {
+        pageSize.style.width = '21.6cm';
+        pageSize.style.minHeight = '27.9cm';
+      }
+    }
+
+    async function exportNote(format) {
+      const content = document.getElementById('editor');
+
+      switch (format) {
+        case 'pdf':
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+          const canvas = await html2canvas(content);
+          const imgData = canvas.toDataURL('image/png');
+          doc.addImage(imgData, 'PNG', 10, 10, 180, 0);
+          doc.save('note.pdf');
+          break;
+
+        case 'jpg':
+          const canvasJPG = await html2canvas(content);
+          const imgDataJPG = canvasJPG.toDataURL('image/jpeg');
+          const linkJPG = document.createElement('a');
+          linkJPG.download = 'note.jpg';
+          linkJPG.href = imgDataJPG;
+          linkJPG.click();
+          break;
+
+        case 'doc':
+          const blob = new Blob([content.innerHTML], { type: 'application/msword' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'note.doc';
+          a.click();
+          URL.revokeObjectURL(url);
+          break;
+      }
+    }
+
+    window.onclick = function(event) {
+      if (!event.target.matches('button')) {
+        const dropdowns = document.getElementsByClassName('dropdown-content');
+        for (const dropdown of dropdowns) {
+          if (dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+          }
+        }
+      }
+
+      if (!event.target.matches('button') && !event.target.matches('.color-option')) {
+        document.getElementById('colorPicker').style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
